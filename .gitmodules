@@ -3,7 +3,7 @@
 	url = https://github.com/Yeet-Masta/yapb.git
 [submodule "3rdparty/mainui_cpp"]
 	path = 3rdparty/mainui_cpp
-	url = https://github.com/Yeet-Masta/cs16-mainui_cpp.git
+	url = https://github.com/Yeet-Masta/mainui_cpp.git
 [submodule "3rdparty/ReGameDLL_CS"]
 	path = 3rdparty/ReGameDLL_CS
 	url = https://github.com/Yeet-Masta/ReGameDLL_CS.git
