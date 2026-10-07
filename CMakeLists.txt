@@ -34,13 +34,32 @@ if(VITA)
 	add_compile_options(-fno-use-cxa-atexit)
 endif()
 
-if(NOT WIN32 AND NOT APPLE)
+if(NOT WIN32 AND NOT APPLE AND NOT EMSCRIPTEN)
 	add_link_options(-Wl,--no-undefined)
 endif()
 
 include(CheckSymbolExists)
 check_symbol_exists(strlcpy string.h HAVE_STRLCPY)
 check_symbol_exists(strlcat string.h HAVE_STRLCAT)
+
+if(EMSCRIPTEN)
+	# WebAssembly: every library here is an Emscripten side module, dlopen()'ed by the engine (MAIN_MODULE)
+	get_property(CS16_SHARED_LIBS_SET GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS SET)
+	get_property(CS16_SHARED_LIBS GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
+	if(CS16_SHARED_LIBS_SET AND NOT CS16_SHARED_LIBS)
+		message(FATAL_ERROR "This CMake version (${CMAKE_VERSION}) can't build Emscripten shared libraries, use another one")
+	endif()
+
+	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+	add_compile_options(-fPIC $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>)
+	# export only what is explicitly marked for export (EXPORT/DLLEXPORT, like on Windows): emcc defaults
+	# to -fvisibility=default for PIC code and wasm-ld imports back every weak (inline, template) default
+	# visibility function even with -Bsymbolic, the loader binds these imports to JS trampolines
+	add_compile_options(-fvisibility=hidden $<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>)
+	# side modules share one global symbol namespace (GOT), so bind own symbols locally,
+	# otherwise client/menu/server interpose each other's gpGlobals, pmove, g_engfuncs, s_pInterfaceRegs...
+	add_link_options(-sSIDE_MODULE=1 -Wl,-Bsymbolic)
+endif()
 
 include(YYThunks)
 

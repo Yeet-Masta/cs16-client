@@ -23,7 +23,7 @@
 
 #include "build.h"
 
-#if XASH_LINUX == 1
+#if XASH_LINUX == 1 || XASH_EMSCRIPTEN == 1
 #include <dlfcn.h> // dlopen,dlclose, et al
 #include <unistd.h>
 #endif
